@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: uaa
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://47.93.228.169:8761/eureka
