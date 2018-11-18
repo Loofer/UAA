@@ -132,7 +132,6 @@ dependencies {
     compile(
             'org.springframework.boot:spring-boot-starter-web',
             'org.springframework.boot:spring-boot-starter-actuator',
-            'org.springframework.cloud:spring-cloud-starter-config',
             'org.springframework.cloud:spring-cloud-starter-oauth2',
 //            'org.springframework.session:spring-session-data-redis',
             'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client',
