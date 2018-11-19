@@ -1,6 +1,7 @@
 package cn.telami.uaa.config;
 
 import cn.telami.uaa.handler.AuthenticationHandler;
+import cn.telami.uaa.service.impl.UaaUserDetailsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -8,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -18,10 +20,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Slf4j
 @Order(1)
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(securedEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Autowired
   private AuthenticationHandler authenticationHandler;
+
+  @Autowired
+  private UaaUserDetailsService userDetailsService;
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
@@ -41,7 +47,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .authenticationEntryPoint(authenticationHandler)
         .and()
         .requestMatchers()
-        .antMatchers("/login", "/oauth/authorize", "/logout"
+        .antMatchers("/login", "/oauth/authorize", "/logout","/**/profile"
         )
         .and()
         .authorizeRequests()
@@ -57,12 +63,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     String method = "configure";
     log.debug("Enter {}", method);
     log.debug("Configure AuthenticationManagerBuilder for the Authentication Server");
-    auth
-        .inMemoryAuthentication()
-        .withUser("admin").password("{noop}admin").roles("USER");
-    log.debug("Initialize UserDetailsService");
     //encrypt password
-    //auth.userDetailsService(uaaDetailsService).passwordEncoder(passwordEncoder());
+    auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
     log.debug("Exit {}", method);
   }
 

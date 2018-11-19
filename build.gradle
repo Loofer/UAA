@@ -3,8 +3,6 @@ buildscript {
         springBootVersion = '2.1.0.RELEASE'
     }
     repositories {
-        mavenCentral()
-
         maven {
             name "aliyun1"
             url 'http://maven.aliyun.com/nexus/content/groups/public'
@@ -92,7 +90,6 @@ tasks.withType(Checkstyle) {
 }
 
 repositories {
-    mavenCentral()
     maven { url "https://repo.spring.io/milestone" }
 
     maven {
@@ -133,11 +130,12 @@ dependencies {
             'org.springframework.boot:spring-boot-starter-web',
             'org.springframework.boot:spring-boot-starter-actuator',
             'org.springframework.cloud:spring-cloud-starter-oauth2',
+            "org.springframework.cloud:spring-cloud-starter-config",
 //            'org.springframework.session:spring-session-data-redis',
             'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client',
-//            'com.baomidou:mybatis-plus-boot-starter:3.0.3',
-//            'mysql:mysql-connector-java:8.0.12',
-//            'com.alibaba:druid:1.1.10'
+            'com.baomidou:mybatis-plus-boot-starter:3.0.3',
+            'mysql:mysql-connector-java:8.0.12',
+            'com.alibaba:druid:1.1.10'
     )
     runtime('org.springframework.boot:spring-boot-devtools')
     compileOnly('org.projectlombok:lombok')

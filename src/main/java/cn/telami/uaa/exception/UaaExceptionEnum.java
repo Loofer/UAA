@@ -9,7 +9,9 @@ import lombok.Getter;
 public enum UaaExceptionEnum {
 
   REQUEST_NULL(400, "没有找到业务数据"),
-  SERVER_ERROR(500, "服务器异常");
+  SERVER_ERROR(500, "服务器异常"),
+  USER_HAVE_ALREADY_REGISTERED(8000, "User has already registered"),
+  USER_DOES_NOT_EXIST(8000, "User does not exist");
 
   UaaExceptionEnum(int code, String message) {
     this.code = code;
