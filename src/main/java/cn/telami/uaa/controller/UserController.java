@@ -7,8 +7,10 @@ import cn.telami.uaa.exception.UaaException;
 import cn.telami.uaa.model.User;
 import cn.telami.uaa.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -29,6 +31,8 @@ public class UserController {
   private static final String REGISTER_PATH = PATH + "register";
 
   private static final String PROFILE_PATH = PATH + "profile";
+
+  private static final String ME_PATH = PATH + "me";
 
   @Autowired
   private UserService userService;
@@ -55,6 +59,8 @@ public class UserController {
     userService.save(User.builder()
         .username(username)
         .password(passwordEncoder.encode(password))
+        .authorities(User.ROLE_NORMAL)
+        .enabled(true)
         .build()
     );
     UsernamePasswordAuthenticationToken token =
@@ -75,6 +81,15 @@ public class UserController {
    */
   @GetMapping(path = PROFILE_PATH)
   public Response getProfile() {
+
+    return Response.ok(userService.getProfile());
+  }
+
+  /**
+   * get user profile with token.
+   */
+  @GetMapping(path = ME_PATH)
+  public Response me() {
 
     return Response.ok(userService.getProfile());
   }

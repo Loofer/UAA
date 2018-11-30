@@ -33,7 +33,7 @@ public class AuthenticationHandler implements AuthenticationSuccessHandler,
    * Removes temporary authentication-related data which may have been stored in the
    * session during the authentication process.
    */
-  private void clearAuthenticationAttributes(HttpServletRequest request) {
+  private final void clearAuthenticationAttributes(HttpServletRequest request) {
     HttpSession session = request.getSession(false);
 
     if (session == null) {
@@ -84,7 +84,7 @@ public class AuthenticationHandler implements AuthenticationSuccessHandler,
   public void handle(HttpServletRequest request,
                      HttpServletResponse response,
                      AccessDeniedException accessDeniedException) throws IOException {
-    String method = "handler";
+    String method = "handle";
     log.debug("Enter {}", method);
     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
     Message message = Message.failOf(accessDeniedException.getMessage());
@@ -108,28 +108,29 @@ public class AuthenticationHandler implements AuthenticationSuccessHandler,
     log.debug("Exit {}", method);
   }
 
+
+  /**
+   * 返回信息.
+   */
+  static void writeResponse(HttpServletResponse response,
+                            Object responseBody,
+                            ObjectMapper objectMapper) throws IOException {
+    response.setCharacterEncoding("UTF-8");
+    response.setContentType("application/json; charset=utf-8");
+    String jsonMessage = objectMapper.writeValueAsString(responseBody);
+    response.getWriter().append(jsonMessage);
+    log.debug("writeResponse,responseBody={}", jsonMessage);
+  }
+
   @Override
   public void onAuthenticationFailure(HttpServletRequest request,
                                       HttpServletResponse response,
                                       AuthenticationException exception) throws IOException {
     String method = "onAuthenticationFailure";
     log.debug("Enter {}", method);
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    response.setStatus(HttpServletResponse.SC_OK);
     Message message = Message.failOf(exception.getMessage());
     writeResponse(response, message, objectMapper);
     log.debug("Exit {}", method);
-  }
-
-  /**
-   * response message.
-   */
-  private static void writeResponse(HttpServletResponse response,
-                                    Object responseBody,
-                                    ObjectMapper objectMapper) throws IOException {
-    response.setCharacterEncoding("UTF-8");
-    response.setContentType("application/json; charset=utf-8");
-    String jsonMessage = objectMapper.writeValueAsString(responseBody);
-    response.getWriter().append(jsonMessage);
-    log.debug("writeResponse,responseBody={}", jsonMessage);
   }
 }

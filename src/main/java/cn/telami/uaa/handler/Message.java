@@ -10,7 +10,7 @@ import lombok.ToString;
 public class Message {
 
   public static final int SUCCESS = 200;
-  public static final int FAILURE = -1;
+  public static final int FAILURE = 400;
 
   Integer status;
   String message;

@@ -131,9 +131,10 @@ dependencies {
             'org.springframework.boot:spring-boot-starter-actuator',
             'org.springframework.cloud:spring-cloud-starter-oauth2',
             "org.springframework.cloud:spring-cloud-starter-config",
-//            'org.springframework.session:spring-session-data-redis',
+            'org.springframework.session:spring-session-data-redis',
+            'redis.clients:jedis:2.9.0',
             'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client',
-            'com.baomidou:mybatis-plus-boot-starter:3.0.3',
+            'com.baomidou:mybatis-plus-boot-starter:3.0.6',
             'mysql:mysql-connector-java:8.0.12',
             'com.alibaba:druid:1.1.10'
     )

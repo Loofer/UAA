@@ -85,9 +85,9 @@ public class User extends BaseModel {
    */
   public Collection<? extends GrantedAuthority> buildAuthorities() {
     List<GrantedAuthority> list = Lists.newArrayList();
-    for (String role : authorities.split(",")) {
+    for (String authority : authorities.split(",")) {
       GrantedAuthority grantedAuthority =
-          new SimpleGrantedAuthority(User.ROLES_PREFIX + role.toUpperCase());
+          new SimpleGrantedAuthority(User.ROLES_PREFIX + authority.toUpperCase());
       list.add(grantedAuthority);
     }
     return list;

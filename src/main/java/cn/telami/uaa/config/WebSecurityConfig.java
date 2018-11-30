@@ -1,6 +1,7 @@
 package cn.telami.uaa.config;
 
 import cn.telami.uaa.handler.AuthenticationHandler;
+import cn.telami.uaa.model.User;
 import cn.telami.uaa.service.impl.UaaUserDetailsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Slf4j
 @Order(1)
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(securedEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
   @Autowired
@@ -47,10 +48,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .authenticationEntryPoint(authenticationHandler)
         .and()
         .requestMatchers()
-        .antMatchers("/login", "/oauth/authorize", "/logout","/**/profile"
-        )
+        .antMatchers("/login", "/oauth/authorize", "/logout", "/**/profile","/v1/api/uaa/test/**")
         .and()
         .authorizeRequests()
+        .antMatchers("/v1/api/uaa/test/normal").hasRole(User.ROLE_NORMAL)
+        .antMatchers("/v1/api/uaa/test/admin").hasRole("ADMIN")
         .anyRequest().authenticated()
         .and().csrf().disable()
         .httpBasic().disable()
