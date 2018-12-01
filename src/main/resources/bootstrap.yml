@@ -9,6 +9,11 @@ spring:
 resource:
   id: users
 
+
+message:
+  expire: 300
+  prefix: uaa_sms_
+
 mybatis-plus:
     mapper-locations: classpath:mapper/*.xml
     type-aliases-package: cn.telami.uaa.mapper
@@ -16,6 +21,9 @@ mybatis-plus:
       map-underscore-to-camel-case: true
     global-config:
       banner: false
+feign:
+  hystrix:
+    enabled: true
 
 ---
 spring:

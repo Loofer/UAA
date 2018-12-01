@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class Oauth2ClientController {
 
-  static final String PATH = "v1/api/admin/client";
+  static final String PATH = "v1/api/uaa/admin/client";
   static final String CLIENT_INFO_PATH = PATH + "/{id}";
   static final String CLIENT_LIST_PATH = PATH + "/list";
 

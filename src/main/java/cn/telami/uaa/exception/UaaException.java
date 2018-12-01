@@ -39,4 +39,16 @@ public class UaaException extends RuntimeException {
     this.setValues(uaaExceptionEnum.getCode(), uaaExceptionEnum.getMessage());
     this.data = data;
   }
+
+  static RuntimeException of(final int code,
+                             final String message) {
+    return new UaaException(code, message);
+  }
+
+  /**
+   * badRequest.
+   */
+  public static RuntimeException badRequest(String message) {
+    return of(400, message);
+  }
 }

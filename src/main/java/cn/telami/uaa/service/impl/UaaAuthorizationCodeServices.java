@@ -1,15 +1,21 @@
 package cn.telami.uaa.service.impl;
 
+import cn.pilipa.security.OAuth2AuthenticationDeserializer;
+import cn.pilipa.security.OAuth2RefreshTokenDeserializer;
 import cn.telami.uaa.model.AuthorizationCode;
 import cn.telami.uaa.service.AuthorizationCodeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+
 import java.io.IOException;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.common.OAuth2RefreshToken;
 import org.springframework.security.oauth2.common.exceptions.InvalidGrantException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;
@@ -26,7 +32,17 @@ public class UaaAuthorizationCodeServices implements AuthorizationCodeServices {
   private ObjectMapper objectMapper = new ObjectMapper();
 
   /**
-   * 用户调用/oauth/authorize?response_type=code&client_id=xxx&redirect_uri=xxx生成授权码.
+   * init.
+   */
+  public UaaAuthorizationCodeServices() {
+    SimpleModule module = new SimpleModule();
+    module.addDeserializer(OAuth2Authentication.class, new OAuth2AuthenticationDeserializer());
+    module.addDeserializer(OAuth2RefreshToken.class, new OAuth2RefreshTokenDeserializer());
+    objectMapper.registerModule(module);
+  }
+
+  /**
+   * call【/oauth/authorize?response_type=code&client_id=xxx&redirect_uri=xxx】 generate code.
    *
    * @param authentication 权限
    */
@@ -61,8 +77,8 @@ public class UaaAuthorizationCodeServices implements AuthorizationCodeServices {
   }
 
   /**
-   * 用户调用/oauth/token?grant_type=authorization_code
-   * &code=xxx&redirect_uri=xxx&scope=xxx用授权码换取access token时需要验证授权码.
+   * call【/oauth/token?grant_type=authorization_code&code=xxx&redirect_uri=xxx&scope=xxx】.
+   * get access_token
    *
    * @param code 授权码
    */
