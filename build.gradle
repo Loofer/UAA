@@ -139,7 +139,7 @@ dependencies {
             'mysql:mysql-connector-java:8.0.12',
             'com.alibaba:druid:1.1.10'
     )
-    compile files('lib/pilipa-spring-boot-starter-security-2.0.2.jar')
+    compile fileTree(dir:'libs',include:['*.jar'])
     runtime('org.springframework.boot:spring-boot-devtools')
     compileOnly('org.projectlombok:lombok')
     testImplementation('org.springframework.boot:spring-boot-starter-test')

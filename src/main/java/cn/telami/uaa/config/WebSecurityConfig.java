@@ -1,5 +1,7 @@
 package cn.telami.uaa.config;
 
+import cn.telami.uaa.authentication.DingTalkAuthenticationFilter;
+import cn.telami.uaa.authentication.DingTalkAuthenticationProvider;
 import cn.telami.uaa.authentication.MobilePhoneAuthenticationFilter;
 import cn.telami.uaa.authentication.MobilePhoneAuthenticationProvider;
 import cn.telami.uaa.handler.AuthenticationHandler;
@@ -40,6 +42,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Autowired
   private MobilePhoneAuthenticationProvider mobilePhoneAuthenticationProvider;
 
+  @Autowired
+  private DingTalkAuthenticationProvider dingTalkAuthenticationProvider;
+
   @Bean
   MobilePhoneAuthenticationFilter phoneAuthenticationFilter() {
     MobilePhoneAuthenticationFilter phoneAuthenticationFilter =
@@ -50,6 +55,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     phoneAuthenticationFilter.setAuthenticationSuccessHandler(authenticationHandler);
     phoneAuthenticationFilter.setAuthenticationFailureHandler(authenticationHandler);
     return phoneAuthenticationFilter;
+  }
+
+  @Bean
+  DingTalkAuthenticationFilter dingTalkAuthenticationFilter() {
+    DingTalkAuthenticationFilter dingTalkAuthenticationFilter = new DingTalkAuthenticationFilter();
+    ProviderManager providerManager =
+        new ProviderManager(Collections.singletonList(dingTalkAuthenticationProvider));
+    dingTalkAuthenticationFilter.setAuthenticationManager(providerManager);
+    dingTalkAuthenticationFilter.setAuthenticationSuccessHandler(authenticationHandler);
+    dingTalkAuthenticationFilter.setAuthenticationFailureHandler(authenticationHandler);
+    return dingTalkAuthenticationFilter;
   }
 
   @Override
@@ -70,18 +86,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .authenticationEntryPoint(authenticationHandler)
         .and()
         .requestMatchers()
-        .antMatchers("/login/phone", "/login", "/oauth/authorize",
-            "/logout", "/**/profile", "/v1/api/uaa/test/**"
+        .antMatchers("/login/phone", "/login", "/oauth/authorize","/dingtalk/callback",
+            "/logout", "/**/profile", "/v1/api/uaa/user/check/bind"
         )
         .and()
         .authorizeRequests()
-        .antMatchers("/v1/api/uaa/test/normal").hasRole(User.ROLE_NORMAL)
-        .antMatchers("/v1/api/uaa/test/admin").hasRole("ADMIN")
-        .antMatchers("/login/phone").permitAll()
+        .antMatchers("/**/client/**").hasRole("ADMIN")
+        .antMatchers("/login/phone","/dingtalk/callback").permitAll()
         .anyRequest().authenticated()
         .and().csrf().disable()
         .httpBasic().disable()
         .addFilterBefore(phoneAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(dingTalkAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
         .cors();
     log.debug("Exit {}", method);
   }

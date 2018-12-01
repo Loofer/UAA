@@ -12,7 +12,8 @@ public enum UaaExceptionEnum {
   SERVER_ERROR(500, "服务器异常"),
   USER_HAVE_ALREADY_REGISTERED(8000, "User has already registered"),
   USER_DOES_NOT_EXIST(8001, "User does not exist"),
-  MESSAGE_SEND_FAIL(8002, "Message send fail");
+  MESSAGE_SEND_FAIL(8002, "Message send fail"),
+  NEED_BIND(8003, "Current user need to bind phone!");
 
   UaaExceptionEnum(int code, String message) {
     this.code = code;
