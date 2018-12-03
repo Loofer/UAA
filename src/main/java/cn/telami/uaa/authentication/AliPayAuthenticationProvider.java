@@ -1,36 +1,31 @@
 package cn.telami.uaa.authentication;
 
+import static cn.telami.uaa.constant.Oauth2LoginPrefixConstants.ALIPAY_OAUTH2;
+import static cn.telami.uaa.constant.Oauth2LoginPrefixConstants.ALIPAY_USER;
+
 import cn.telami.uaa.client.AliPayClientExecutor;
 import cn.telami.uaa.exception.BadRequestParamsException;
 import cn.telami.uaa.model.Oauth2Login;
 import cn.telami.uaa.model.User;
 import cn.telami.uaa.service.Oauth2LoginService;
 import cn.telami.uaa.service.UserService;
-import cn.telami.uaa.utils.ValidatorUtils;
 import com.alipay.api.response.AlipaySystemOauthTokenResponse;
 import com.alipay.api.response.AlipayUserInfoShareResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class AliPayAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
+public class AliPayAuthenticationProvider extends AbstractOauth2LoginAuthenticationProvider {
 
   @Autowired
   private AliPayClientExecutor aliPayClientExecutor;
@@ -43,17 +38,6 @@ public class AliPayAuthenticationProvider extends AbstractUserDetailsAuthenticat
 
   @Autowired
   RedisTemplate<String, String> redisTemplate;
-
-  @Autowired
-  private ObjectMapper objectMapper;
-
-  @Value("${message.expire}")
-  private int expire = 300;
-
-  public static final String PREX_DINGTALK_BIND_MOBILE = "LOGIN:ALIPAY:BIND:MOBILE";
-  public static final String USER = PREX_DINGTALK_BIND_MOBILE + ":USER";
-  public static final String AUTH = PREX_DINGTALK_BIND_MOBILE + ":AUTH";
-
 
   @Override
   protected void additionalAuthenticationChecks(
@@ -69,9 +53,10 @@ public class AliPayAuthenticationProvider extends AbstractUserDetailsAuthenticat
     log.debug("Enter {}.", method);
     //get authentication code
     AliPayCode aliPayCode = (AliPayCode) authentication.getCredentials();
-    log.debug("AliPay authorization code = {}", aliPayCode.getCode());
+    log.debug("AliPay authorization code = {}", aliPayCode.getAuthorizationCode());
     //get aliapy user info
-    AlipayUserInfoShareResponse alipayUserInfo = getAlipayUserInfo(aliPayCode.getCode());
+    AlipayUserInfoShareResponse alipayUserInfo =
+        getAlipayUserInfo(aliPayCode.getAuthorizationCode());
     if (!alipayUserInfo.isSuccess()) {
       throw new BadRequestParamsException(alipayUserInfo.getSubMsg());
     }
@@ -100,7 +85,7 @@ public class AliPayAuthenticationProvider extends AbstractUserDetailsAuthenticat
     } else {
       user = updateUserInfo(oauth2Login, alipayUserInfo);
     }
-    user = checkBindMobile(aliPayCode, user, oauth2Login);
+    checkBindMobile(ALIPAY_USER, ALIPAY_OAUTH2, aliPayCode, user, oauth2Login);
     log.debug("Exit {}.", method);
     return user.buildUserDetails();
   }
@@ -123,36 +108,6 @@ public class AliPayAuthenticationProvider extends AbstractUserDetailsAuthenticat
         .province(alipayUserInfo.getProvince())
         .build();
     authLoginService.updateById(build);
-    return user;
-  }
-
-  /**
-   * 查看当前钉钉用户是否已绑定手机.
-   *
-   * @param aliPayCode dingcode
-   * @param user       用户
-   */
-  private User checkBindMobile(AliPayCode aliPayCode, User user, Oauth2Login oauth2Login) {
-    String sessionId = aliPayCode.getSessionId();
-    //当前用户已绑定手机
-    if (ValidatorUtils.isMobile(user.getMobile())) {
-      return user;
-    }
-    //存入redis
-    try {
-      ValueOperations<String, String> stringValueOperations = redisTemplate.opsForValue();
-      String userJson = objectMapper.writeValueAsString(user);
-      String oauth2LoginJson = objectMapper.writeValueAsString(oauth2Login);
-      stringValueOperations.set(
-          USER + ":" + sessionId, userJson, expire, TimeUnit.SECONDS
-      );
-      stringValueOperations.set(
-          AUTH + ":" + sessionId, oauth2LoginJson, expire, TimeUnit.SECONDS
-      );
-      log.debug("The current user has not bind phone");
-    } catch (JsonProcessingException e) {
-      log.warn("convert user to json fail {}", user);
-    }
     return user;
   }
 

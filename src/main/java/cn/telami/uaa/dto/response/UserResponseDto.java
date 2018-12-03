@@ -2,8 +2,10 @@ package cn.telami.uaa.dto.response;
 
 import cn.telami.uaa.model.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +17,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Builder
-public class UserResponseDto implements Serializable {
+public class UserResponseDto {
 
   /**
    * id.
@@ -57,7 +59,7 @@ public class UserResponseDto implements Serializable {
   /**
    * 可用状态.
    */
-  private Boolean enabled = true;
+  private Boolean enabled;
 
   /**
    * 是否设置密码.

@@ -1,39 +1,35 @@
 package cn.telami.uaa.authentication;
 
+import static cn.telami.uaa.constant.Oauth2LoginPrefixConstants.DINGTALK_OAUTH2;
+import static cn.telami.uaa.constant.Oauth2LoginPrefixConstants.DINGTALK_USER;
+
 import cn.telami.uaa.client.DingTalkClientExecutor;
 import cn.telami.uaa.exception.BadRequestParamsException;
 import cn.telami.uaa.model.Oauth2Login;
 import cn.telami.uaa.model.User;
 import cn.telami.uaa.service.Oauth2LoginService;
 import cn.telami.uaa.service.UserService;
-import cn.telami.uaa.utils.ValidatorUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.dingtalk.api.response.OapiSnsGetPersistentCodeResponse;
 import com.dingtalk.api.response.OapiSnsGetSnsTokenResponse;
 import com.dingtalk.api.response.OapiSnsGettokenResponse;
 import com.dingtalk.api.response.OapiSnsGetuserinfoResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.taobao.api.ApiException;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
+public class DingTalkAuthenticationProvider extends AbstractOauth2LoginAuthenticationProvider {
 
   @Autowired
   private DingTalkClientExecutor dingTalkClient;
@@ -46,17 +42,6 @@ public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthentic
 
   @Autowired
   RedisTemplate<String, String> redisTemplate;
-
-  @Autowired
-  private ObjectMapper objectMapper;
-
-  @Value("${message.expire}")
-  private int expire = 300;
-
-  public static final String PREX_DINGTALK_BIND_MOBILE = "LOGIN:DINGTALK:BIND:MOBILE";
-  public static final String USER = PREX_DINGTALK_BIND_MOBILE + ":USER";
-  public static final String AUTH = PREX_DINGTALK_BIND_MOBILE + ":AUTH";
-
 
   @Override
   protected void additionalAuthenticationChecks(
@@ -72,10 +57,10 @@ public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthentic
     log.debug("Enter {}.", method);
     //get authentication code
     DingTalkCode dingTalkCode = (DingTalkCode) authentication.getCredentials();
-    log.debug("DingTalk authorization code = {}", dingTalkCode.getCode());
+    log.debug("DingTalk authorization code = {}", dingTalkCode.getAuthorizationCode());
     //get dingTalk user info
     OapiSnsGetuserinfoResponse.UserInfo dingTalkUserInfo =
-        getDingTalkUserInfo(dingTalkCode.getCode());
+        getDingTalkUserInfo(dingTalkCode.getAuthorizationCode());
     //query db get oauth2Login
     Oauth2Login oauth2Login = authLoginService.getOne(new LambdaQueryWrapper<Oauth2Login>()
         .eq(Oauth2Login::getUnionid, dingTalkUserInfo.getUnionid()));
@@ -98,7 +83,7 @@ public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthentic
     } else {
       user = updateUserInfo(oauth2Login, dingTalkUserInfo);
     }
-    user = checkBindMobile(dingTalkCode, user, oauth2Login);
+    checkBindMobile(DINGTALK_USER, DINGTALK_OAUTH2, dingTalkCode, user, oauth2Login);
     log.debug("Exit {}.", method);
     return user.buildUserDetails();
   }
@@ -118,36 +103,6 @@ public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthentic
         .openid(dingTalkUserInfo.getOpenid())
         .build();
     authLoginService.updateById(build);
-    return user;
-  }
-
-  /**
-   * 查看当前钉钉用户是否已绑定手机.
-   *
-   * @param dingTalkCode dingcode
-   * @param user         用户
-   */
-  private User checkBindMobile(DingTalkCode dingTalkCode, User user, Oauth2Login oauth2Login) {
-    String sessionId = dingTalkCode.getSessionId();
-    //当前用户已绑定手机
-    if (ValidatorUtils.isMobile(user.getMobile())) {
-      return user;
-    }
-    //存入redis
-    try {
-      ValueOperations<String, String> stringValueOperations = redisTemplate.opsForValue();
-      String userJson = objectMapper.writeValueAsString(user);
-      String oauth2LoginJson = objectMapper.writeValueAsString(oauth2Login);
-      stringValueOperations.set(
-          USER + ":" + sessionId, userJson, expire, TimeUnit.SECONDS
-      );
-      stringValueOperations.set(
-          AUTH + ":" + sessionId, oauth2LoginJson, expire, TimeUnit.SECONDS
-      );
-      log.debug("The current user has not bind phone");
-    } catch (JsonProcessingException e) {
-      log.warn("convert user to json fail {}", user);
-    }
     return user;
   }
 

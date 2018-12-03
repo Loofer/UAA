@@ -32,7 +32,7 @@ public class AliPayAuthenticationFilter extends AbstractAuthenticationProcessing
       throw new AuthorizationCodeEmptyException("Alipay authentication code can not be empty!");
     }
     AliPayCode aliPayCode = AliPayCode.builder()
-        .code(code)
+        .authorizationCode(code)
         .sessionId(request.getSession(true).getId())
         .build();
     // Allow subclasses to set the "details" property

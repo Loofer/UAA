@@ -2,23 +2,16 @@ package cn.telami.uaa.authentication;
 
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
-@Builder
-public class DingTalkCode {
+@NoArgsConstructor
+@ToString(callSuper = true)
+public class DingTalkCode extends Oauth2LoginCode {
 
-  /**
-   * 钉钉授权码.
-   */
-  private String code;
-
-  /**
-   * 没有绑定手机时，记录下当前请求.
-   */
-  private String sessionId;
-
-  /**
-   * 手机登录后，用于绑定钉钉.
-   */
-  private String mobile;
+  @Builder
+  public DingTalkCode(String authorizationCode, String sessionId, String mobile) {
+    super(authorizationCode, sessionId, mobile);
+  }
 }

@@ -32,7 +32,7 @@ public class DingTalkAuthenticationFilter extends AbstractAuthenticationProcessi
       throw new AuthorizationCodeEmptyException("DingTalk authentication code can not be empty!");
     }
     DingTalkCode dingTalkCode = DingTalkCode.builder()
-        .code(code)
+        .authorizationCode(code)
         .sessionId(request.getSession(true).getId())
         .build();
     // Allow subclasses to set the "details" property
