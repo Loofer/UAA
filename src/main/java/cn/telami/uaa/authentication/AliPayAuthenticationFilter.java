@@ -2,6 +2,8 @@ package cn.telami.uaa.authentication;
 
 import cn.telami.uaa.exception.AuthorizationCodeEmptyException;
 import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -9,9 +11,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AbstractAuthenticationProcessingFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 public class AliPayAuthenticationFilter extends AbstractAuthenticationProcessingFilter {
 

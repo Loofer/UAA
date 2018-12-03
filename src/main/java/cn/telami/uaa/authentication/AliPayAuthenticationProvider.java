@@ -12,6 +12,10 @@ import com.alipay.api.response.AlipayUserInfoShareResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +27,6 @@ import org.springframework.security.authentication.dao.AbstractUserDetailsAuthen
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -71,7 +72,7 @@ public class AliPayAuthenticationProvider extends AbstractUserDetailsAuthenticat
     log.debug("AliPay authorization code = {}", aliPayCode.getCode());
     //get aliapy user info
     AlipayUserInfoShareResponse alipayUserInfo = getAlipayUserInfo(aliPayCode.getCode());
-    if (!alipayUserInfo.isSuccess()){
+    if (!alipayUserInfo.isSuccess()) {
       throw new BadRequestParamsException(alipayUserInfo.getSubMsg());
     }
     //query db get oauth2Login
@@ -107,8 +108,8 @@ public class AliPayAuthenticationProvider extends AbstractUserDetailsAuthenticat
   /**
    * 更新用户支付宝登录信息.
    *
-   * @param oauth2Login      第三方登录信息.
-   * @param alipayUserInfo   登录的支付宝用户信息.
+   * @param oauth2Login    第三方登录信息.
+   * @param alipayUserInfo 登录的支付宝用户信息.
    */
   private User updateUserInfo(Oauth2Login oauth2Login,
                               AlipayUserInfoShareResponse alipayUserInfo) {
@@ -129,7 +130,7 @@ public class AliPayAuthenticationProvider extends AbstractUserDetailsAuthenticat
    * 查看当前钉钉用户是否已绑定手机.
    *
    * @param aliPayCode dingcode
-   * @param user         用户
+   * @param user       用户
    */
   private User checkBindMobile(AliPayCode aliPayCode, User user, Oauth2Login oauth2Login) {
     String sessionId = aliPayCode.getSessionId();
