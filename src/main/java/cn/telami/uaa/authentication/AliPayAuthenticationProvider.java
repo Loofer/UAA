@@ -1,24 +1,17 @@
 package cn.telami.uaa.authentication;
 
-import cn.telami.uaa.client.DingTalkClientExecutor;
+import cn.telami.uaa.client.AliPayClientExecutor;
 import cn.telami.uaa.exception.BadRequestParamsException;
 import cn.telami.uaa.model.Oauth2Login;
 import cn.telami.uaa.model.User;
 import cn.telami.uaa.service.Oauth2LoginService;
 import cn.telami.uaa.service.UserService;
 import cn.telami.uaa.utils.ValidatorUtils;
+import com.alipay.api.response.AlipaySystemOauthTokenResponse;
+import com.alipay.api.response.AlipayUserInfoShareResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.dingtalk.api.response.OapiSnsGetPersistentCodeResponse;
-import com.dingtalk.api.response.OapiSnsGetSnsTokenResponse;
-import com.dingtalk.api.response.OapiSnsGettokenResponse;
-import com.dingtalk.api.response.OapiSnsGetuserinfoResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.taobao.api.ApiException;
-
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
-
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +24,15 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+
 @Slf4j
 @Component
-public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
+public class AliPayAuthenticationProvider extends AbstractUserDetailsAuthenticationProvider {
 
   @Autowired
-  private DingTalkClientExecutor dingTalkClient;
+  private AliPayClientExecutor aliPayClientExecutor;
 
   @Autowired
   private Oauth2LoginService authLoginService;
@@ -53,7 +49,7 @@ public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthentic
   @Value("${message.expire}")
   private int expire = 300;
 
-  public static final String PREX_DINGTALK_BIND_MOBILE = "LOGIN:DINGTALK:BIND:MOBILE";
+  public static final String PREX_DINGTALK_BIND_MOBILE = "LOGIN:ALIPAY:BIND:MOBILE";
   public static final String USER = PREX_DINGTALK_BIND_MOBILE + ":USER";
   public static final String AUTH = PREX_DINGTALK_BIND_MOBILE + ":AUTH";
 
@@ -71,14 +67,16 @@ public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthentic
     String method = "retrieveUser";
     log.debug("Enter {}.", method);
     //get authentication code
-    DingTalkCode dingTalkCode = (DingTalkCode) authentication.getCredentials();
-    log.debug("DingTalk authorization code = {}", dingTalkCode.getCode());
-    //get dingTalk user info
-    OapiSnsGetuserinfoResponse.UserInfo dingTalkUserInfo =
-        getDingTalkUserInfo(dingTalkCode.getCode());
+    AliPayCode aliPayCode = (AliPayCode) authentication.getCredentials();
+    log.debug("AliPay authorization code = {}", aliPayCode.getCode());
+    //get aliapy user info
+    AlipayUserInfoShareResponse alipayUserInfo = getAlipayUserInfo(aliPayCode.getCode());
+    if (!alipayUserInfo.isSuccess()){
+      throw new BadRequestParamsException(alipayUserInfo.getSubMsg());
+    }
     //query db get oauth2Login
     Oauth2Login oauth2Login = authLoginService.getOne(new LambdaQueryWrapper<Oauth2Login>()
-        .eq(Oauth2Login::getUnionid, dingTalkUserInfo.getUnionid()));
+        .eq(Oauth2Login::getUnionid, alipayUserInfo.getUserId()));
     User user;
     if (Objects.isNull(oauth2Login)) {
       //新建用户
@@ -90,32 +88,38 @@ public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthentic
           .build();
       //新建第三方登录方式与之绑定
       oauth2Login = Oauth2Login.builder()
-          .type(Oauth2Login.Type.DingTalk)
-          .unionid(dingTalkUserInfo.getUnionid())
-          .openid(dingTalkUserInfo.getOpenid())
-          .nickname(dingTalkUserInfo.getNick())
+          .type(Oauth2Login.Type.Alipay)
+          .unionid(alipayUserInfo.getUserId())
+          .nickname(alipayUserInfo.getNickName())
+          .avatar(alipayUserInfo.getAvatar())
+          .city(alipayUserInfo.getCity())
+          .country(alipayUserInfo.getCountryCode())
+          .province(alipayUserInfo.getProvince())
           .build();
     } else {
-      user = updateUserInfo(oauth2Login, dingTalkUserInfo);
+      user = updateUserInfo(oauth2Login, alipayUserInfo);
     }
-    user = checkBindMobile(dingTalkCode, user, oauth2Login);
+    user = checkBindMobile(aliPayCode, user, oauth2Login);
     log.debug("Exit {}.", method);
     return user.buildUserDetails();
   }
 
   /**
-   * 更新用户钉钉登录信息.
+   * 更新用户支付宝登录信息.
    *
    * @param oauth2Login      第三方登录信息.
-   * @param dingTalkUserInfo 登录的钉钉用户信息.
+   * @param alipayUserInfo   登录的支付宝用户信息.
    */
   private User updateUserInfo(Oauth2Login oauth2Login,
-                              OapiSnsGetuserinfoResponse.UserInfo dingTalkUserInfo) {
+                              AlipayUserInfoShareResponse alipayUserInfo) {
     User user = userService.getOne(new LambdaQueryWrapper<User>()
         .eq(User::getId, oauth2Login.getUserId()));
     Oauth2Login build = oauth2Login.toBuilder()
-        .nickname(dingTalkUserInfo.getNick())
-        .openid(dingTalkUserInfo.getOpenid())
+        .nickname(alipayUserInfo.getNickName())
+        .avatar(alipayUserInfo.getAvatar())
+        .city(alipayUserInfo.getCity())
+        .country(alipayUserInfo.getCountryCode())
+        .province(alipayUserInfo.getProvince())
         .build();
     authLoginService.updateById(build);
     return user;
@@ -124,11 +128,11 @@ public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthentic
   /**
    * 查看当前钉钉用户是否已绑定手机.
    *
-   * @param dingTalkCode dingcode
+   * @param aliPayCode dingcode
    * @param user         用户
    */
-  private User checkBindMobile(DingTalkCode dingTalkCode, User user, Oauth2Login oauth2Login) {
-    String sessionId = dingTalkCode.getSessionId();
+  private User checkBindMobile(AliPayCode aliPayCode, User user, Oauth2Login oauth2Login) {
+    String sessionId = aliPayCode.getSessionId();
     //当前用户已绑定手机
     if (ValidatorUtils.isMobile(user.getMobile())) {
       return user;
@@ -152,45 +156,12 @@ public class DingTalkAuthenticationProvider extends AbstractUserDetailsAuthentic
   }
 
   /**
-   * 获取dingTalk用户信息.
+   * get alipay user info.
    *
-   * @param code 授权码.
+   * @param code code.
    */
-  private OapiSnsGetuserinfoResponse.UserInfo getDingTalkUserInfo(String code) {
-    OapiSnsGetuserinfoResponse.UserInfo userInfo = null;
-    try {
-      OapiSnsGettokenResponse gettokenResponse = dingTalkClient.getAccessToken();
-      if (!gettokenResponse.isSuccess()) {
-        log.warn("can not get dingtalk access_token!");
-        throw new BadRequestParamsException("can not get dingtalk access_token!");
-      }
-      String accessToken = gettokenResponse.getAccessToken();
-      OapiSnsGetPersistentCodeResponse getPersistentCodeResponse =
-          dingTalkClient.getPersistentCode(accessToken, code);
-      if (!getPersistentCodeResponse.isSuccess()) {
-        log.warn("can not get dingtalk persistent_code!");
-        throw new BadRequestParamsException("can not get dingtalk persistent_code!");
-      }
-      //TODO save db
-      OapiSnsGetSnsTokenResponse getSnsTokenResponse = dingTalkClient.getSnsToken(
-          accessToken,
-          getPersistentCodeResponse.getOpenid(),
-          getPersistentCodeResponse.getPersistentCode()
-      );
-      if (!getSnsTokenResponse.isSuccess()) {
-        log.warn("can not get dingtalk sns_token!");
-        throw new BadRequestParamsException("can not get dingtalk sns_token!");
-      }
-      OapiSnsGetuserinfoResponse getuserinfoResponse =
-          dingTalkClient.getUserInfo(getSnsTokenResponse.getSnsToken());
-      if (!getuserinfoResponse.isSuccess()) {
-        log.warn("can not get dingtalk user_info!");
-        throw new BadRequestParamsException("can not get dingtalk user_info!");
-      }
-      userInfo = getuserinfoResponse.getUserInfo();
-    } catch (ApiException e) {
-      log.error("can not get dingtalk user_info!", e);
-    }
-    return userInfo;
+  private AlipayUserInfoShareResponse getAlipayUserInfo(String code) {
+    AlipaySystemOauthTokenResponse tokenResponse = aliPayClientExecutor.getAccessToken(code);
+    return aliPayClientExecutor.getUserInfo(tokenResponse.getAccessToken());
   }
 }

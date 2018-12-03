@@ -140,6 +140,7 @@ dependencies {
             'com.alibaba:druid:1.1.10'
     )
     compile fileTree(dir:'libs',include:['*.jar'])
+    compile group: 'com.alipay.sdk', name: 'alipay-sdk-java', version: '3.4.49.ALL'
     runtime('org.springframework.boot:spring-boot-devtools')
     compileOnly('org.projectlombok:lombok')
     testImplementation('org.springframework.boot:spring-boot-starter-test')

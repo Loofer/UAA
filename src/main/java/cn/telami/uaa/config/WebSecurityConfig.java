@@ -1,5 +1,7 @@
 package cn.telami.uaa.config;
 
+import cn.telami.uaa.authentication.AliPayAuthenticationFilter;
+import cn.telami.uaa.authentication.AliPayAuthenticationProvider;
 import cn.telami.uaa.authentication.DingTalkAuthenticationFilter;
 import cn.telami.uaa.authentication.DingTalkAuthenticationProvider;
 import cn.telami.uaa.authentication.MobilePhoneAuthenticationFilter;
@@ -45,6 +47,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
   @Autowired
   private DingTalkAuthenticationProvider dingTalkAuthenticationProvider;
 
+  @Autowired
+  private AliPayAuthenticationProvider aliPayAuthenticationProvider;
+
   @Bean
   MobilePhoneAuthenticationFilter phoneAuthenticationFilter() {
     MobilePhoneAuthenticationFilter phoneAuthenticationFilter =
@@ -68,6 +73,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     return dingTalkAuthenticationFilter;
   }
 
+  @Bean
+  AliPayAuthenticationFilter aliPayAuthenticationFilter() {
+    AliPayAuthenticationFilter aliPayAuthenticationFilter = new AliPayAuthenticationFilter();
+    ProviderManager providerManager =
+        new ProviderManager(Collections.singletonList(aliPayAuthenticationProvider));
+    aliPayAuthenticationFilter.setAuthenticationManager(providerManager);
+    aliPayAuthenticationFilter.setAuthenticationSuccessHandler(authenticationHandler);
+    aliPayAuthenticationFilter.setAuthenticationFailureHandler(authenticationHandler);
+    return aliPayAuthenticationFilter;
+  }
+
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     String method = "configure";
@@ -86,18 +102,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         .authenticationEntryPoint(authenticationHandler)
         .and()
         .requestMatchers()
-        .antMatchers("/login/phone", "/login", "/oauth/authorize","/dingtalk/callback",
-            "/logout", "/**/profile", "/v1/api/uaa/user/check/bind"
+        .antMatchers("/login/phone", "/login", "/oauth/authorize", "/dingtalk/callback",
+            "/logout", "/**/profile", "/v1/api/uaa/user/check/bind","/alipay/callback"
         )
         .and()
         .authorizeRequests()
         .antMatchers("/**/client/**").hasRole("ADMIN")
-        .antMatchers("/login/phone","/dingtalk/callback").permitAll()
+        .antMatchers("/login/phone", "/dingtalk/callback","/alipay/callback").permitAll()
         .anyRequest().authenticated()
         .and().csrf().disable()
         .httpBasic().disable()
         .addFilterBefore(phoneAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(dingTalkAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+        .addFilterBefore(aliPayAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
         .cors();
     log.debug("Exit {}", method);
   }

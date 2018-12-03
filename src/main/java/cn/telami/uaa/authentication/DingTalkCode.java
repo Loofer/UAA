@@ -8,7 +8,7 @@ import lombok.Getter;
 public class DingTalkCode {
 
   /**
-   * 微信授权码.
+   * 钉钉授权码.
    */
   private String code;
 
@@ -18,7 +18,7 @@ public class DingTalkCode {
   private String sessionId;
 
   /**
-   * 手机登录后，用于绑定微信号.
+   * 手机登录后，用于绑定钉钉.
    */
   private String mobile;
 }

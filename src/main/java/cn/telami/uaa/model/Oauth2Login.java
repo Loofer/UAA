@@ -25,7 +25,7 @@ public class Oauth2Login extends BaseModel {
    * 用户id.
    */
   @Setter
-  private Long userId;
+  private String userId;
 
   /**
    * 第三方登陆类型.
@@ -81,7 +81,7 @@ public class Oauth2Login extends BaseModel {
    */
   @Builder(toBuilder = true)
   public Oauth2Login(String id, LocalDateTime createTime, LocalDateTime updateTime,
-                     Long userId, Type type, String unionid,
+                     String userId, Type type, String unionid,
                      String openid, String nickname, String sex, String avatar, String province,
                      String city, String country) {
     super(id, createTime, updateTime, BaseModel.DEL_FLAG_NORMAL);
