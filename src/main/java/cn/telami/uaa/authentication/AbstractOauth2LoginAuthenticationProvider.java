@@ -9,29 +9,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 @Slf4j
+@Component
 public abstract class AbstractOauth2LoginAuthenticationProvider
     extends AbstractUserDetailsAuthenticationProvider {
 
   private ObjectMapper objectMapper = new ObjectMapper();
 
-  private RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
-
-  @Override
-  protected abstract void additionalAuthenticationChecks(
-      UserDetails userDetails,
-      UsernamePasswordAuthenticationToken authentication) throws AuthenticationException;
-
-  protected abstract UserDetails retrieveUser(
-      String username,
-      UsernamePasswordAuthenticationToken authentication) throws AuthenticationException;
+  @Autowired
+  private RedisTemplate<String, String> redisTemplate;
 
   /**
    * Check whether the current login user is bound to the phone.

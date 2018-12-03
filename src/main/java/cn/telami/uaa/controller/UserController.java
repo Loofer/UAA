@@ -41,7 +41,7 @@ public class UserController {
 
   private static final String ME_PATH = PATH + "me";
 
-  private static final String CHECK_BIND_PHONE_PATH = PATH + "/check/bind";
+  private static final String CHECK_BIND_PHONE_PATH = PATH + "check/bind";
 
 
   @Autowired
