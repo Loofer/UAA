@@ -2,6 +2,7 @@ package cn.telami.uaa.model;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -10,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
@@ -30,6 +32,7 @@ public class User extends BaseModel {
   /**
    * 用户名.
    */
+  @Setter
   private String username;
 
   /**
@@ -50,6 +53,7 @@ public class User extends BaseModel {
   /**
    * 手机号码.
    */
+  @Setter
   private String mobile;
 
   /**
@@ -77,6 +81,7 @@ public class User extends BaseModel {
   }
 
   @TableField(exist = false)
+  @JsonIgnore
   final Collection<? extends GrantedAuthority> defaultAuthorities =
       AuthorityUtils.commaSeparatedStringToAuthorityList(ROLES_PREFIX + ROLE_NORMAL);
 

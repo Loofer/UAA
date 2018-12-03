@@ -5,15 +5,15 @@ import cn.telami.uaa.model.User;
 import cn.telami.uaa.utils.ValidatorUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
 
 @Slf4j
 @Component
@@ -27,11 +27,8 @@ public abstract class AbstractOauth2LoginAuthenticationProvider
 
   /**
    * Check whether the current login user is bound to the phone.
-   *
-   * @param oauth2LoginCode oauth2LoginCode
-   * @param user            user
    */
-  protected void checkBindMobile(String prefixUser, String prefixOauth2,
+  protected void checkBindMobile(String prefix,
                                  Oauth2LoginCode oauth2LoginCode,
                                  User user, Oauth2Login oauth2Login) {
     String sessionId = oauth2LoginCode.getSessionId();
@@ -41,14 +38,12 @@ public abstract class AbstractOauth2LoginAuthenticationProvider
     }
     //save info to redis
     try {
-      ValueOperations<String, String> stringValueOperations = redisTemplate.opsForValue();
+      ListOperations<String, String> stringListOperations = redisTemplate.opsForList();
       String userJson = objectMapper.writeValueAsString(user);
       String oauth2LoginJson = objectMapper.writeValueAsString(oauth2Login);
-      stringValueOperations.set(
-          prefixUser + ":" + sessionId, userJson, 300, TimeUnit.SECONDS);
-      stringValueOperations.set(
-          prefixOauth2 + ":" + sessionId, oauth2LoginJson, 300, TimeUnit.SECONDS);
-      log.debug("The current user has not bind phone");
+      ArrayList<String> strings = Lists.newArrayList(userJson, oauth2LoginJson);
+      stringListOperations.rightPushAll(prefix + ":" + sessionId, strings);
+      log.debug("Current user need to bind phone");
     } catch (JsonProcessingException e) {
       log.warn("Convert user to json failed {}", user);
     }

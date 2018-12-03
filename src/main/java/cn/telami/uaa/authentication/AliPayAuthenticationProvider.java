@@ -1,7 +1,6 @@
 package cn.telami.uaa.authentication;
 
-import static cn.telami.uaa.constant.Oauth2LoginPrefixConstants.ALIPAY_OAUTH2;
-import static cn.telami.uaa.constant.Oauth2LoginPrefixConstants.ALIPAY_USER;
+import static cn.telami.uaa.enums.Oauth2LoginPrefixEnum.LOGIN_ALIPAY_BIND_MOBILE;
 
 import cn.telami.uaa.client.AliPayClientExecutor;
 import cn.telami.uaa.exception.BadRequestParamsException;
@@ -14,6 +13,7 @@ import com.alipay.api.response.AlipayUserInfoShareResponse;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 import java.util.Objects;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,14 +65,13 @@ public class AliPayAuthenticationProvider extends AbstractOauth2LoginAuthenticat
         .eq(Oauth2Login::getUnionid, alipayUserInfo.getUserId()));
     User user;
     if (Objects.isNull(oauth2Login)) {
-      //新建用户
       user = User.builder()
           .username(RandomStringUtils.randomAlphanumeric(20))
           .mobile(RandomStringUtils.randomAlphanumeric(20))
           .enabled(true)
           .authorities(User.ROLE_NORMAL)
           .build();
-      //新建第三方登录方式与之绑定
+      //new one to bind oauth2login type
       oauth2Login = Oauth2Login.builder()
           .type(Oauth2Login.Type.Alipay)
           .unionid(alipayUserInfo.getUserId())
@@ -85,16 +84,13 @@ public class AliPayAuthenticationProvider extends AbstractOauth2LoginAuthenticat
     } else {
       user = updateUserInfo(oauth2Login, alipayUserInfo);
     }
-    checkBindMobile(ALIPAY_USER, ALIPAY_OAUTH2, aliPayCode, user, oauth2Login);
+    checkBindMobile(LOGIN_ALIPAY_BIND_MOBILE.name(), aliPayCode, user, oauth2Login);
     log.debug("Exit {}.", method);
     return user.buildUserDetails();
   }
 
   /**
-   * 更新用户支付宝登录信息.
-   *
-   * @param oauth2Login    第三方登录信息.
-   * @param alipayUserInfo 登录的支付宝用户信息.
+   * update alipay user info.
    */
   private User updateUserInfo(Oauth2Login oauth2Login,
                               AlipayUserInfoShareResponse alipayUserInfo) {
@@ -113,8 +109,6 @@ public class AliPayAuthenticationProvider extends AbstractOauth2LoginAuthenticat
 
   /**
    * get alipay user info.
-   *
-   * @param code code.
    */
   private AlipayUserInfoShareResponse getAlipayUserInfo(String code) {
     AlipaySystemOauthTokenResponse tokenResponse = aliPayClientExecutor.getAccessToken(code);

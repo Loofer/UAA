@@ -1,7 +1,6 @@
 package cn.telami.uaa.authentication;
 
-import static cn.telami.uaa.constant.Oauth2LoginPrefixConstants.DINGTALK_OAUTH2;
-import static cn.telami.uaa.constant.Oauth2LoginPrefixConstants.DINGTALK_USER;
+import static cn.telami.uaa.enums.Oauth2LoginPrefixEnum.LOGIN_DINGTALK_BIND_MOBILE;
 
 import cn.telami.uaa.client.DingTalkClientExecutor;
 import cn.telami.uaa.exception.BadRequestParamsException;
@@ -83,7 +82,7 @@ public class DingTalkAuthenticationProvider extends AbstractOauth2LoginAuthentic
     } else {
       user = updateUserInfo(oauth2Login, dingTalkUserInfo);
     }
-    checkBindMobile(DINGTALK_USER, DINGTALK_OAUTH2, dingTalkCode, user, oauth2Login);
+    checkBindMobile(LOGIN_DINGTALK_BIND_MOBILE.name(), dingTalkCode, user, oauth2Login);
     log.debug("Exit {}.", method);
     return user.buildUserDetails();
   }

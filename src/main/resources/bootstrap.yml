@@ -8,7 +8,29 @@ spring:
 
 resource:
   id: users
-
+authentication:
+  oauth2:
+    dingtalk:
+      app_id: dingoa*********8zsv7j
+      app_secret: V7*****************DwPNEkVzlzCUH
+    alipay:
+      gateway_url: https://openapi.alipay.com/gateway.do
+      app_id: 2018************2
+      app_private_key: MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDKVEj2CIj7WdPl
+                       iRHFwss******************************OaZm3hw0aOiTLbjLQXmlwHhkfuE
+                       iRHFwss******************************OaZm3hw0aOiTLbjLQXmlwHhkfuE
+                       iRHFwss******************************OaZm3hw0aOiTLbjLQXmlwHhkfuE
+                       iRHFwss******************************OaZm3hw0aOiTLbjLQXmlwHhkfuE
+                       qzJzDzKxb+vGjkUtSKGmaO6k1FqY4g6jPnXutR+syBqtz9rbMUTr9erQSXF6MwGn
+                       iRHFwss******************************OaZm3hw0aOiTLbjLQXmlwHhkfuE
+                       4OQtR3x0qfka3R74B9phzNOVVaU0FBQfZfv4h76rAoGAUpf5vnSRbQmRZy2z1Elq
+                       lfqfra0Ht8ZxddxXtC4kHWQYdnHePzBD78X4xLoUPB6JxM6+RoEgkGhGqA97dbHq
+                       iRHFwss******************************OaZm3hw0aOiTLbjLQXmlwHhkfuE
+                       gXqOVHFXWZjPr1Sh5eam2xY=
+      format: json
+      charset: utf-8
+      alipay_public_key: ******************************************************************************************
+      sign_type: RSA2
 
 message:
   expire: 300
@@ -24,7 +46,7 @@ mybatis-plus:
 feign:
   hystrix:
     enabled: true
-
+logging.level.cn.telami.uaa: DEBUG
 ---
 spring:
   profiles: dev

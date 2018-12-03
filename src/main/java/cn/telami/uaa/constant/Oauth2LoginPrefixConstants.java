@@ -1,9 +1,0 @@
-package cn.telami.uaa.constant;
-
-public interface Oauth2LoginPrefixConstants {
-
-  String DINGTALK_USER = "LOGIN-DINGTALK-BIND-MOBILE-USER";
-  String DINGTALK_OAUTH2 = "LOGIN_DINGTALK_BIND_MOBILE_OAUTH2";
-  String ALIPAY_USER = "LOGIN_ALIPAY_BIND_MOBILE_USER";
-  String ALIPAY_OAUTH2 = "LOGIN_ALIPAY_BIND_MOBILE_OAUTH2";
-}

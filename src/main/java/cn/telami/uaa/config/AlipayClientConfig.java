@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "alipay.apenapi")
+@ConfigurationProperties(prefix = "authentication.oauth2.alipay")
 @Setter
 @Getter
 public class AlipayClientConfig {

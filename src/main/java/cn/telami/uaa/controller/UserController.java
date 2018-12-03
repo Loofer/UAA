@@ -105,9 +105,9 @@ public class UserController {
   }
 
   /**
-   * 检查用户是否需要绑定手机号.
+   * Check current user .
    *
-   * @param activeUser 当前用户.
+   * @param activeUser current user.
    */
   @GetMapping(path = CHECK_BIND_PHONE_PATH)
   @PreAuthorize("isAuthenticated()")
@@ -118,11 +118,12 @@ public class UserController {
     boolean bind = !ValidatorUtils.isMobile(activeUser.getUsername());
 
     if (bind) {
-      log.debug("Exit {}. current user {} need bind phone {}", method, activeUser.getUsername());
+      log.debug("Exit {}. current user {} need to bind phone {}", method, activeUser.getUsername());
       throw new UaaException(UaaExceptionEnum.NEED_BIND);
     } else {
-      log.debug("Exit {}. current user {} don't bind phone {}", method, activeUser.getUsername());
-      return Response.ok("current user don't need to bind phone");
+      log.debug(
+          "Exit {}. current user {} don't need to bind phone {}", method, activeUser.getUsername());
+      return Response.ok("Current user don't need to bind phone");
     }
   }
 }

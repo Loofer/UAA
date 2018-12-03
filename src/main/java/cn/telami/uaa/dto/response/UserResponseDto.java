@@ -1,15 +1,18 @@
 package cn.telami.uaa.dto.response;
 
+import cn.telami.uaa.model.Oauth2Login;
 import cn.telami.uaa.model.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Getter
@@ -65,6 +68,12 @@ public class UserResponseDto {
    * 是否设置密码.
    */
   private Boolean hasPassword;
+
+  /**
+   * 第三方登录.
+   */
+  @Setter
+  private List<Oauth2Login> oauth2Logins;
 
   /**
    * 构造 Profile.
