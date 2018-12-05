@@ -15,3 +15,8 @@ User authentication and authorization center
 [关于用户系统第三方登录设计的想法](https://www.telami.cn/2018/11/07/%E7%94%A8%E6%88%B7%E7%B3%BB%E7%BB%9F%E7%AC%AC%E4%B8%89%E6%96%B9%E7%99%BB%E5%BD%95%E8%AE%BE%E8%AE%A1/)
 
 UAA目前采用的是多种登录方式都是一个用户的设计思路
+
+## 目前没人关注本项目，但是确实提供了一整套整合第三方登录的方案，如果对你有帮助的话，希望可以扫一下支付宝的红包，感谢
+
+## No Face
+![关于用户系统第三方登录设计的想法](http://cdn.telami.cn/WechatIMG14972.jpeg)
