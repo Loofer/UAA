@@ -1,6 +1,6 @@
 package cn.telami.uaa.config;
 
-import cn.pilipa.security.RedisTokenStore;
+import cn.telami.oatuh2.RedisTokenStore;
 import cn.telami.uaa.constant.SecurityConstants;
 import cn.telami.uaa.service.impl.UaaUserDetailsService;
 

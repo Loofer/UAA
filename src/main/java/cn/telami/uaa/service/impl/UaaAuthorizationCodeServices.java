@@ -1,7 +1,7 @@
 package cn.telami.uaa.service.impl;
 
-import cn.pilipa.security.OAuth2AuthenticationDeserializer;
-import cn.pilipa.security.OAuth2RefreshTokenDeserializer;
+import cn.telami.oatuh2.OAuth2AuthenticationDeserializer;
+import cn.telami.oatuh2.OAuth2RefreshTokenDeserializer;
 import cn.telami.uaa.model.AuthorizationCode;
 import cn.telami.uaa.service.AuthorizationCodeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
